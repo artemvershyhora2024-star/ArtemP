@@ -26,18 +26,19 @@ public class ArtemPvpClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("ArtemPVP Client fully initializing with China Hat & Modular System!");
+        LOGGER.info("ArtemPVP Client initializing with Aspect Ratio & Modular System!");
 
         // 1. Загружаем конфиг и регистрируем горячие клавиши
         ArtemPvpConfig.load();
         KeyBindingManager.registerKeys();
 
-        // 2. Инициализируем систему модулей, утилиты и визуальные фичи
+        // 2. Инициализируем систему модулей, утилиты и фичи
         ModuleManager.init();
         ArtemPvpUtilities.registerUtilities();
         ArtemPvpPvPUtilities.register();
         ArtemPvpVisualAndPvP2.register();
-        ChinaHatFeature.register(); // Добавили рендеринг China Hat
+        ChinaHatFeature.register();
+        AspectRatioMixinHelper.register(); // Добавили растяг 4:3
 
         // 3. Инициализируем HUD элементы с координатами из конфига
         topBarHud = new TopBarHud(ArtemPvpConfig.DATA.topBarX, ArtemPvpConfig.DATA.topBarY);
