@@ -13,7 +13,8 @@ public class HudManager {
             ArtemPvpClient.potionsHud,
             ArtemPvpClient.musicPlayerHud,
             ArtemPvpClient.inventoryHud,
-            ArtemPvpClient.targetHud
+            ArtemPvpClient.targetHud,
+            ArtemPvpClient.keystrokesHud
         );
     }
 }
