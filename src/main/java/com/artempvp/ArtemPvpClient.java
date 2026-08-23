@@ -19,32 +19,38 @@ public class ArtemPvpClient implements ClientModInitializer {
     public static KeybindsHud keybindsHud;
     public static InventoryHud inventoryHud;
     public static TargetHud targetHud;
-    public static KeystrokesHud keystrokesHud; // Наша новая переменная Keystrokes
+    public static KeystrokesHud keystrokesHud;
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("ArtemPVP Client fully initialized with Keystrokes!");
+        LOGGER.info("ArtemPVP Client initializing with Config support!");
 
+        // Загружаем конфиг при старте
+        ArtemPvpConfig.load();
         KeyBindingManager.registerKeys();
 
-        // Инициализируем координаты всех элементов HUD
-        topBarHud = new TopBarHud(10, 10);
-        cooldownsHud = new CooldownsHud(10, 40);
-        keybindsHud = new KeybindsHud(10, 150);
-        potionsHud = new PotionsHud(180, 10);
-        musicPlayerHud = new MusicPlayerHud(330, 10);
-        inventoryHud = new InventoryHud(330, 95);
-        targetHud = new TargetHud(330, 175);
-        keystrokesHud = new KeystrokesHud(10, 235); // Размещаем Keystrokes под остальными панелями слева
+        // Инициализируем HUD элементы с координатами из конфига
+        topBarHud = new TopBarHud(ArtemPvpConfig.DATA.topBarX, ArtemPvpConfig.DATA.topBarY);
+        cooldownsHud = new CooldownsHud(ArtemPvpConfig.DATA.cooldownsX, ArtemPvpConfig.DATA.cooldownsY);
+        keybindsHud = new KeybindsHud(ArtemPvpConfig.DATA.keybindsX, ArtemPvpConfig.DATA.keybindsY);
+        potionsHud = new PotionsHud(ArtemPvpConfig.DATA.potionsX, ArtemPvpConfig.DATA.potionsY);
+        musicPlayerHud = new MusicPlayerHud(ArtemPvpConfig.DATA.musicPlayerX, ArtemPvpConfig.DATA.musicPlayerY);
+        inventoryHud = new InventoryHud(ArtemPvpConfig.DATA.inventoryX, ArtemPvpConfig.DATA.inventoryY);
+        targetHud = new TargetHud(ArtemPvpConfig.DATA.targetX, ArtemPvpConfig.DATA.targetY);
+        keystrokesHud = new KeystrokesHud(ArtemPvpConfig.DATA.keystrokesX, ArtemPvpConfig.DATA.keystrokesY);
 
-        // Рендеринг элементов с учетом состояния кнопок в меню
+        // Синхронизируем состояние кнопок меню из конфига
+        ArtemPvpMenuScreen.musicHudEnabled = ArtemPvpConfig.DATA.musicHudEnabled;
+        ArtemPvpMenuScreen.cooldownsHudEnabled = ArtemPvpConfig.DATA.cooldownsHudEnabled;
+
+        // Рендеринг элементов
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             ArtemPvpClient.topBarHud.render(drawContext, 0, 0, tickDelta);
             ArtemPvpClient.potionsHud.render(drawContext, 0, 0, tickDelta);
             ArtemPvpClient.keybindsHud.render(drawContext, 0, 0, tickDelta);
             ArtemPvpClient.inventoryHud.render(drawContext, 0, 0, tickDelta);
             ArtemPvpClient.targetHud.render(drawContext, 0, 0, tickDelta);
-            ArtemPvpClient.keystrokesHud.render(drawContext, 0, 0, tickDelta); // Рендерим WASD
+            ArtemPvpClient.keystrokesHud.render(drawContext, 0, 0, tickDelta);
 
             if (ArtemPvpMenuScreen.musicHudEnabled) {
                 ArtemPvpClient.musicPlayerHud.render(drawContext, 0, 0, tickDelta);
@@ -54,7 +60,7 @@ public class ArtemPvpClient implements ClientModInitializer {
             }
         });
 
-        // Открытие GUI по нажатию Right Shift
+        // Открытие меню по Right Shift
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (KeyBindingManager.openMenuKey.wasPressed()) {
                 if (client.player != null) {
