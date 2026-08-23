@@ -1,11 +1,7 @@
 package com.artempvp;
 
-import com.artempvp.hud.components.TopBarHud;
-import com.artempvp.hud.components.PotionsHud;
-import com.artempvp.hud.components.MusicPlayerHud;
-import com.artempvp.hud.components.CooldownsHud;
-import com.artempvp.hud.components.KeybindsHud;
-import com.artempvp.hud.components.InventoryHud;
+import com.artempvp.hud.HudManager;
+import com.artempvp.hud.components.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import org.slf4j.Logger;
@@ -24,9 +20,9 @@ public class ArtemPvpClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("ArtemPVP Client initialized!");
+        LOGGER.info("ArtemPVP Client initialized with Drag & Drop HUD!");
 
-        // Инициализируем все окна интерфейса
+        // Инициализация координат
         topBarHud = new TopBarHud(10, 10);
         cooldownsHud = new CooldownsHud(10, 40);
         keybindsHud = new KeybindsHud(10, 150);
@@ -34,14 +30,11 @@ public class ArtemPvpClient implements ClientModInitializer {
         musicPlayerHud = new MusicPlayerHud(330, 10);
         inventoryHud = new InventoryHud(330, 95);
 
-        // Регистрируем их общую отрисовку на экране
+        // Рендеринг всех элементов на экране
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
-            topBarHud.render(drawContext, 0, 0, tickDelta);
-            cooldownsHud.render(drawContext, 0, 0, tickDelta);
-            keybindsHud.render(drawContext, 0, 0, tickDelta);
-            potionsHud.render(drawContext, 0, 0, tickDelta);
-            musicPlayerHud.render(drawContext, 0, 0, tickDelta);
-            inventoryHud.render(drawContext, 0, 0, tickDelta);
+            for (var comp : HudManager.getComponents()) {
+                comp.render(drawContext, 0, 0, tickDelta);
+            }
         });
     }
 }
