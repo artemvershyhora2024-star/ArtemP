@@ -11,7 +11,6 @@ public class ArtemPvpClient implements ClientModInitializer {
     public static final String MOD_ID = "artempvp-client";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    // Объявляем все компоненты HUD
     public static TopBarHud topBarHud;
     public static PotionsHud potionsHud;
     public static MusicPlayerHud musicPlayerHud;
@@ -22,9 +21,12 @@ public class ArtemPvpClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("ArtemPVP Client fully initialized with all PvP modules!");
+        LOGGER.info("ArtemPVP Client fully initialized with Keybindings!");
 
-        // Задаем начальные координаты для каждого окошка на экране
+        // Регистрируем горячие клавиши
+        KeyBindingManager.registerKeys();
+
+        // Задаем начальные координаты элементов
         topBarHud = new TopBarHud(10, 10);
         cooldownsHud = new CooldownsHud(10, 40);
         keybindsHud = new KeybindsHud(10, 150);
@@ -33,7 +35,7 @@ public class ArtemPvpClient implements ClientModInitializer {
         inventoryHud = new InventoryHud(330, 95);
         targetHud = new TargetHud(330, 175);
 
-        // Регистрируем отрисовку всех элементов интерфейса через менеджер
+        // Рендеринг всех элементов интерфейса
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             for (var comp : HudManager.getComponents()) {
                 comp.render(drawContext, 0, 0, tickDelta);
