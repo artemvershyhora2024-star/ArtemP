@@ -44,11 +44,11 @@ public class ArtemPvpClient implements ClientModInitializer {
             }
         });
 
-        // Отслеживание нажатия клавиши в игре (каждый тик)
+      // Открытие нашего GUI по нажатию Right Shift
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (KeyBindingManager.openMenuKey.wasPressed()) {
                 if (client.player != null) {
-                    client.player.sendMessage(Text.literal("§5[ArtemPVP] §fМеню настроек HUD пока в разработке!"), false);
+                    client.setScreen(new ArtemPvpMenuScreen());
                 }
             }
         });
