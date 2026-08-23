@@ -5,6 +5,8 @@ import com.artempvp.hud.components.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.minecraft.client.gui.screen.TitleScreen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +25,15 @@ public class ArtemPvpClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("ArtemPVP Client initializing with Config support!");
+        LOGGER.info("ArtemPVP Client initializing with PvP Utilities!");
 
-        // Загружаем конфиг при старте
+        // Загружаем конфиг и регистрируем клавиши
         ArtemPvpConfig.load();
         KeyBindingManager.registerKeys();
+
+        // Запускаем утилиты (Fullbright, Auto-Sprint и новые PvP-фичи)
+        ArtemPvpUtilities.registerUtilities();
+        ArtemPvpPvPUtilities.register();
 
         // Инициализируем HUD элементы с координатами из конфига
         topBarHud = new TopBarHud(ArtemPvpConfig.DATA.topBarX, ArtemPvpConfig.DATA.topBarY);
@@ -43,7 +49,7 @@ public class ArtemPvpClient implements ClientModInitializer {
         ArtemPvpMenuScreen.musicHudEnabled = ArtemPvpConfig.DATA.musicHudEnabled;
         ArtemPvpMenuScreen.cooldownsHudEnabled = ArtemPvpConfig.DATA.cooldownsHudEnabled;
 
-        // Рендеринг элементов
+        // Рендеринг элементов HUD
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             ArtemPvpClient.topBarHud.render(drawContext, 0, 0, tickDelta);
             ArtemPvpClient.potionsHud.render(drawContext, 0, 0, tickDelta);
@@ -66,6 +72,13 @@ public class ArtemPvpClient implements ClientModInitializer {
                 if (client.player != null) {
                     client.setScreen(new ArtemPvpMenuScreen());
                 }
+            }
+        });
+
+        // Заменяем стандартное главное меню на наше кастомное
+        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            if (screen instanceof TitleScreen && !(screen instanceof ArtemPvpMainMenuScreen)) {
+                client.setScreen(new ArtemPvpMainMenuScreen());
             }
         });
     }
