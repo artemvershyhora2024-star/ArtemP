@@ -3,7 +3,9 @@ package com.artempvp;
 import com.artempvp.hud.HudManager;
 import com.artempvp.hud.components.*;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +23,12 @@ public class ArtemPvpClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("ArtemPVP Client fully initialized with Keybindings!");
+        LOGGER.info("ArtemPVP Client fully initialized!");
 
-        // Регистрируем горячие клавиши
+        // Регистрируем клавиши
         KeyBindingManager.registerKeys();
 
-        // Задаем начальные координаты элементов
+        // Инициализируем HUD элементы
         topBarHud = new TopBarHud(10, 10);
         cooldownsHud = new CooldownsHud(10, 40);
         keybindsHud = new KeybindsHud(10, 150);
@@ -35,10 +37,19 @@ public class ArtemPvpClient implements ClientModInitializer {
         inventoryHud = new InventoryHud(330, 95);
         targetHud = new TargetHud(330, 175);
 
-        // Рендеринг всех элементов интерфейса
+        // Рендеринг всех элементов на экране
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             for (var comp : HudManager.getComponents()) {
                 comp.render(drawContext, 0, 0, tickDelta);
+            }
+        });
+
+        // Отслеживание нажатия клавиши в игре (каждый тик)
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (KeyBindingManager.openMenuKey.wasPressed()) {
+                if (client.player != null) {
+                    client.player.sendMessage(Text.literal("§5[ArtemPVP] §fМеню настроек HUD пока в разработке!"), false);
+                }
             }
         });
     }
