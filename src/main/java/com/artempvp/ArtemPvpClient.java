@@ -1,6 +1,5 @@
 package com.artempvp;
 
-import com.artempvp.hud.HudManager;
 import com.artempvp.hud.components.*;
 import com.artempvp.module.ModuleManager;
 import net.fabricmc.api.ClientModInitializer;
@@ -26,21 +25,20 @@ public class ArtemPvpClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("ArtemPVP Client initializing with Aspect Ratio & Modular System!");
+        LOGGER.info("ArtemPVP Client fully loaded with ALL features!");
 
-        // 1. Загружаем конфиг и регистрируем горячие клавиши
         ArtemPvpConfig.load();
         KeyBindingManager.registerKeys();
 
-        // 2. Инициализируем систему модулей, утилиты и фичи
+        // Регистрируем абсолютно все системы и модули
         ModuleManager.init();
         ArtemPvpUtilities.registerUtilities();
         ArtemPvpPvPUtilities.register();
         ArtemPvpVisualAndPvP2.register();
         ChinaHatFeature.register();
-        AspectRatioMixinHelper.register(); // Добавили растяг 4:3
+        AspectRatioMixinHelper.register();
+        ArtemPvpRemainingFeatures.register(); // Все оставшиеся функции
 
-        // 3. Инициализируем HUD элементы с координатами из конфига
         topBarHud = new TopBarHud(ArtemPvpConfig.DATA.topBarX, ArtemPvpConfig.DATA.topBarY);
         cooldownsHud = new CooldownsHud(ArtemPvpConfig.DATA.cooldownsX, ArtemPvpConfig.DATA.cooldownsY);
         keybindsHud = new KeybindsHud(ArtemPvpConfig.DATA.keybindsX, ArtemPvpConfig.DATA.keybindsY);
@@ -50,11 +48,9 @@ public class ArtemPvpClient implements ClientModInitializer {
         targetHud = new TargetHud(ArtemPvpConfig.DATA.targetX, ArtemPvpConfig.DATA.targetY);
         keystrokesHud = new KeystrokesHud(ArtemPvpConfig.DATA.keystrokesX, ArtemPvpConfig.DATA.keystrokesY);
 
-        // 4. Синхронизируем состояние кнопок меню из конфига
         ArtemPvpMenuScreen.musicHudEnabled = ArtemPvpConfig.DATA.musicHudEnabled;
         ArtemPvpMenuScreen.cooldownsHudEnabled = ArtemPvpConfig.DATA.cooldownsHudEnabled;
 
-        // 5. Рендеринг элементов HUD на экране игры
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             ArtemPvpClient.topBarHud.render(drawContext, 0, 0, tickDelta);
             ArtemPvpClient.potionsHud.render(drawContext, 0, 0, tickDelta);
@@ -71,7 +67,6 @@ public class ArtemPvpClient implements ClientModInitializer {
             }
         });
 
-        // 6. Открытие модульного меню по нажатию Right Shift
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (KeyBindingManager.openMenuKey.wasPressed()) {
                 if (client.player != null) {
@@ -80,7 +75,6 @@ public class ArtemPvpClient implements ClientModInitializer {
             }
         });
 
-        // 7. Автоматическая замена стандартного главного меню на наше кастомное
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof TitleScreen && !(screen instanceof ArtemPvpMainMenuScreen)) {
                 client.setScreen(new ArtemPvpMainMenuScreen());
