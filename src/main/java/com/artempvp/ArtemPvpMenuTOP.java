@@ -2,15 +2,20 @@ package com.artempvp;
 
 import com.artempvp.hud.DraggableHudComponent;
 import com.artempvp.hud.HudManager;
+import com.artempvp.module.Module;
+import com.artempvp.module.ModuleManager;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
+import java.util.List;
+
 public class ArtemPvpMenuScreen extends Screen {
     public static boolean musicHudEnabled = true;
     public static boolean cooldownsHudEnabled = true;
 
+    private Module.Category currentCategory = Module.Category.VISUALS;
     private DraggableHudComponent selectedComponent = null;
     private int dragOffsetX = 0;
     private int dragOffsetY = 0;
@@ -22,82 +27,55 @@ public class ArtemPvpMenuScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        rebuildWidgets();
+    }
 
-        int centerX = this.width / 2 - 150;
-        int centerY = this.height / 2 - 100;
+    private void rebuildWidgets() {
+        this.clearChildren();
 
-        // Левая колонка — HUD элементы и базовые функции
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal(musicHudEnabled ? "§aПлеер: ВКЛ" : "§cПлеер: ВЫКЛ"),
-                button -> {
-                    musicHudEnabled = !musicHudEnabled;
-                    button.setMessage(Text.literal(musicHudEnabled ? "§aПлеер: ВКЛ" : "§cПлеер: ВЫКЛ"));
-                    ArtemPvpConfig.save();
-                })
-                .dimensions(centerX + 20, centerY + 50, 120, 20)
-                .build());
+        int centerX = this.width / 2 - 175;
+        int centerY = this.height / 2 - 120;
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal(cooldownsHudEnabled ? "§aКулдауны: ВКЛ" : "§cКулдауны: ВЫКЛ"),
-                button -> {
-                    cooldownsHudEnabled = !cooldownsHudEnabled;
-                    button.setMessage(Text.literal(cooldownsHudEnabled ? "§aКулдауны: ВКЛ" : "§cКулдауны: ВЫКЛ"));
-                    ArtemPvpConfig.save();
-                })
-                .dimensions(centerX + 20, centerY + 80, 120, 20)
-                .build());
+        // Кнопки выбора категорий сверху панели
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("§dВизуальные"), b -> { currentCategory = Module.Category.VISUALS; rebuildWidgets(); })
+                .dimensions(centerX + 20, centerY + 35, 100, 18).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("§dУтилиты"), b -> { currentCategory = Module.Category.UTILITIES; rebuildWidgets(); })
+                .dimensions(centerX + 125, centerY + 35, 100, 18).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("§dHUD элементы"), b -> { currentCategory = Module.Category.HUD; rebuildWidgets(); })
+                .dimensions(centerX + 230, centerY + 35, 100, 18).build());
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal(ArtemPvpUtilities.fullbrightEnabled ? "§aFullbright: ВКЛ" : "§cFullbright: ВЫКЛ"),
-                button -> {
-                    ArtemPvpUtilities.toggleFullbright();
-                    button.setMessage(Text.literal(ArtemPvpUtilities.fullbrightEnabled ? "§aFullbright: ВКЛ" : "§cFullbright: ВЫКЛ"));
-                })
-                .dimensions(centerX + 20, centerY + 110, 120, 20)
-                .build());
+        // Динамический вывод модулей выбранной категории в виде аккуратного списка
+        List<Module> categoryModules = ModuleManager.getModulesByCategory(currentCategory);
+        int startY = centerY + 65;
+        for (int i = 0; i < categoryModules.size(); i++) {
+            Module mod = categoryModules.get(i);
+            int x = (i % 2 == 0) ? centerX + 20 : centerX + 185;
+            int y = startY + (i / 2) * 24;
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal(ArtemPvpUtilities.autoSprintEnabled ? "§aАвто-Спринт: ВКЛ" : "§cАвто-Спринт: ВЫКЛ"),
-                button -> {
-                    ArtemPvpUtilities.autoSprintEnabled = !ArtemPvpUtilities.autoSprintEnabled;
-                    button.setMessage(Text.literal(ArtemPvpUtilities.autoSprintEnabled ? "§aАвто-Спринт: ВКЛ" : "§cАвто-Спринт: ВЫКЛ"));
-                })
-                .dimensions(centerX + 20, centerY + 140, 120, 20)
-                .build());
-
-        // Правая колонка — новые PvP утилиты
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal(ArtemPvpPvPUtilities.autoRespawnEnabled ? "§aАвто-Респавн: ВКЛ" : "§cАвто-Респавн: ВЫКЛ"),
-                button -> {
-                    ArtemPvpPvPUtilities.autoRespawnEnabled = !ArtemPvpPvPUtilities.autoRespawnEnabled;
-                    button.setMessage(Text.literal(ArtemPvpPvPUtilities.autoRespawnEnabled ? "§aАвто-Респавн: ВКЛ" : "§cАвто-Респавн: ВЫКЛ"));
-                })
-                .dimensions(centerX + 160, centerY + 50, 120, 20)
-                .build());
-
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal(ArtemPvpPvPUtilities.blockOverlayEnabled ? "§aБлок-Оверлей: ВКЛ" : "§cБлок-Оверлей: ВЫКЛ"),
-                button -> {
-                    ArtemPvpPvPUtilities.blockOverlayEnabled = !ArtemPvpPvPUtilities.blockOverlayEnabled;
-                    button.setMessage(Text.literal(ArtemPvpPvPUtilities.blockOverlayEnabled ? "§aБлок-Оверлей: ВКЛ" : "§cБлок-Оверлей: ВЫКЛ"));
-                })
-                .dimensions(centerX + 160, centerY + 80, 120, 20)
-                .build());
+            String status = mod.isEnabled() ? "§aВКЛ" : "§cВЫКЛ";
+            this.addDrawableChild(ButtonWidget.builder(Text.literal(mod.getName() + ": " + status), button -> {
+                mod.toggle();
+                button.setMessage(Text.literal(mod.getName() + ": " + (mod.isEnabled() ? "§aВКЛ" : "§cВЫКЛ")));
+                ArtemPvpConfig.save();
+            }).dimensions(x, y, 160, 20).build());
+        }
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        // Рендерим HUD элементы на заднем фоне для перетаскивания мышкой
         for (DraggableHudComponent comp : HudManager.getComponents()) {
             comp.render(context, mouseX, mouseY, delta);
             context.drawBorder(comp.getX(), comp.getY(), comp.getWidth(), comp.getHeight(), 0x777B2CBF);
         }
 
-        int centerX = this.width / 2 - 150;
-        int centerY = this.height / 2 - 100;
-        
-        context.fill(centerX, centerY, centerX + 300, centerY + 200, 0xEE0B001A);
-        context.fill(centerX, centerY, centerX + 300, centerY + 25, 0xFF2A1B3D);
-        context.drawText(this.textRenderer, "§d⚡ ArtemPVP Client - Настройки", centerX + 10, centerY + 8, 0xFFFFFFFF, true);
+        int centerX = this.width / 2 - 175;
+        int centerY = this.height / 2 - 120;
+
+        // Окно клиентского меню
+        context.fill(centerX, centerY, centerX + 350, centerY + 240, 0xEE0B001A);
+        context.fill(centerX, centerY, centerX + 350, centerY + 28, 0xFF2A1B3D);
+        context.drawText(this.textRenderer, "§d⚡ ArtemPVP Client — Модули и Настройки", centerX + 12, centerY + 9, 0xFFFFFFFF, true);
 
         super.render(context, mouseX, mouseY, delta);
     }
@@ -132,7 +110,7 @@ public class ArtemPvpMenuScreen extends Screen {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (button == 0) {
             selectedComponent = null;
-            ArtemPvpConfig.save(); // Сохраняем координаты при отпускании мышки
+            ArtemPvpConfig.save();
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }
